@@ -30,7 +30,13 @@ class Server :
 
   virtual void onTradeRtn(int64_t order_ref);
 
+  virtual void onRspError(int64_t order_ref);
+
   void run();
+
+  void updateT1(int64_t order_ref);
+
+  void updateT2(int64_t order_ref);
 
  private:
   Options* options_;

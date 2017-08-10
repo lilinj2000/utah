@@ -31,13 +31,8 @@ void Server::onAnsOrderInsert(int64_t order_ref) {
   UTAH_TRACE <<"Server::onAnsOrderInsert()";
 
   UTAH_DEBUG <<"order_ref: " <<order_ref;
-  auto it = records_.find(order_ref);
-  if (it != records_.end()) {
-    it->second->updateT1();
 
-    timestamp_file_->putData(it->second);
-    records_.erase(it);
-  }
+  updateT1(order_ref);
 }
 
 void Server::onRspOrderInsert(int64_t order_ref) {
@@ -45,13 +40,7 @@ void Server::onRspOrderInsert(int64_t order_ref) {
 
   UTAH_DEBUG <<"order_ref is " <<order_ref;
 
-  auto it = records_.find(order_ref);
-  if (it != records_.end()) {
-    it->second->updateT2();
-
-    timestamp_file_->putData(it->second);
-    records_.erase(it);
-  }
+  updateT2(order_ref);
 }
 
 void Server::onOrderRtn(int64_t order_ref) {
@@ -64,6 +53,14 @@ void Server::onTradeRtn(int64_t order_ref) {
   UTAH_TRACE <<"Server::onTradeRtn()";
 
   UTAH_DEBUG <<"order_ref = " <<order_ref;
+}
+
+void Server::onRspError(int64_t order_ref) {
+  UTAH_TRACE <<"Server::onRspError()";
+
+  UTAH_DEBUG <<"order_ref = " <<order_ref;
+
+  updateT2(order_ref);
 }
 
 void Server::run() {
@@ -101,6 +98,27 @@ void Server::run() {
   }while(true);
 
   cond->wait(1000);
+}
+
+void Server::updateT1(int64_t order_ref) {
+  UTAH_TRACE <<"Server::updateT1()";
+
+  auto it = records_.find(order_ref);
+  if (it != records_.end()) {
+    it->second->updateT1();
+  }
+}
+
+void Server::updateT2(int64_t order_ref) {
+  UTAH_TRACE <<"Server::updateT2()";
+
+  auto it = records_.find(order_ref);
+  if (it != records_.end()) {
+    it->second->updateT2();
+
+    timestamp_file_->putData(it->second);
+    records_.erase(it);
+  }
 }
 
 }  // namespace utah
